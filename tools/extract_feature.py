@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-
-"""Multi-view test a video classification model."""
+#----------------------------------------------------------------------------
+#
+#      A Basic Script for Feature Bank Extraction Using Trained Models
+#
+#----------------------------------------------------------------------------
 
 import numpy as np
 import torch

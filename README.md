@@ -42,22 +42,22 @@ The codebase provide following resources for fast training and validation
 
 | backbone | dataset | model type | link |
 |----------|:---------------------:|:------------:|:--------------:|
-|ResNet50|Kinetics400|caffe2|[google drive](https://drive.google.com/file/d/1zxS57DAXiLswWG-hI8s76zGdtRFNRgxa/view?usp=sharing)|
-|ResNet101|Kinetics600|caffe2|[google drive](https://drive.google.com/file/d/1U6i2lGo8-qdtL_UDPHHCHwmfOERJxfnK/view?usp=sharing)|
+|ResNet50|Kinetics400|Caffe2|[Google Drive](https://drive.google.com/file/d/1zxS57DAXiLswWG-hI8s76zGdtRFNRgxa/view?usp=sharing)/[Baidu Disk](https://pan.baidu.com/s/1VaOY-GBBY9oTc2m-A-9Ogw) (Code: y1wl)|
+|ResNet101|Kinetics600|Caffe2|[Google Drive](https://drive.google.com/file/d/1U6i2lGo8-qdtL_UDPHHCHwmfOERJxfnK/view?usp=sharing)/[Baidu Disk](https://pan.baidu.com/s/17I-3YaAAj0I2RELaG6P-xw) (Code: slde)|
 
 ### Extracted long term feature bank
 
-| backbone | feature bank | dimension |
+| backbone | feature bank (LMDB) | dimension |
 |----------|:---------------------:|:------------:|
-|ResNet50|[LMDB](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)|1280|
-|ResNet101|[LMDB](https://drive.google.com/file/d/1ND4sSGwAv2SFR42J90Vj9cNn1glz1Ex3/view?usp=sharing)|2304|
+|ResNet50|[Google Drive](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)/[Baidu Disk ](comming soon)(Code: y1wl)|1280|
+|ResNet101|[Google Drive](https://drive.google.com/file/d/1ND4sSGwAv2SFR42J90Vj9cNn1glz1Ex3/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|2304|
 
 ### Checkpoint file
 
 | backbone | checkpoint | model type |
 |----------|:---------------------:|:-----------:|
-|ResNet50|[google drive](https://drive.google.com/file/d/1yimMvcOXaASOFOmp64HKO13LzS5b_YCj/view?usp=sharing)|pytorch|
-|ResNet101|[google drive](https://drive.google.com/file/d/1BZ4MzlhUOzuvBPyaS8DAHcyGikh6TAJh/view?usp=sharing)|pytorch|
+|ResNet50|[Google Drive](https://drive.google.com/file/d/1yimMvcOXaASOFOmp64HKO13LzS5b_YCj/view?usp=sharing)/[Baidu Disk](https://pan.baidu.com/s/1deRNnxgSwlAuOWHAMrzntQ) (Code: fi0s)|pytorch|
+|ResNet101|[Google Drive](https://drive.google.com/file/d/1BZ4MzlhUOzuvBPyaS8DAHcyGikh6TAJh/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|pytorch|
 
 ## Acknowledgement
 
@@ -69,7 +69,7 @@ If you find this repository helps your research, please refer following paper
 ```bibtex
 @InProceedings{Yuxi_2021_ACM,
   author = {Li, Yuxi and Zhang, Boshen and Li, Jian and Wang, Yabiao and Wang, Chengjie and Li, Jilin and Huang, Feiyue and Lin, Weiyao},
-  title = {Classes Matter: A Fine-grained Adversarial Approach to Cross-domain Semantic Segmentation},
+  title = {LSTC: Boosting Atomic Action Detection with Long-Short-Term Context},
   booktitle = {ACM Conference on Multimedia},
   month = {October},
   year = {2021}
