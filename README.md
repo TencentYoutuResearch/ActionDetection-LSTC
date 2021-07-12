@@ -49,7 +49,7 @@ The codebase provide following resources for fast training and validation
 
 | backbone | feature bank (LMDB) | dimension |
 |----------|:---------------------:|:------------:|
-|ResNet50|[Google Drive](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)/[Baidu Disk ](comming soon)(Code: y1wl)|1280|
+|ResNet50|[Google Drive](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|1280|
 |ResNet101|[Google Drive](https://drive.google.com/file/d/1ND4sSGwAv2SFR42J90Vj9cNn1glz1Ex3/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|2304|
 
 ### Checkpoint file
@@ -61,7 +61,7 @@ The codebase provide following resources for fast training and validation
 
 ## Acknowledgement
 
-This codebase is built upon [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/INSTALL.md), please follow the official instruction to install the repository.
+This codebase is built upon [PySlowFast](https://github.com/facebookresearch/SlowFast), please follow the official instruction to install the repository.
 
 ## Citation
 
