@@ -49,15 +49,15 @@ The codebase provide following resources for fast training and validation
 
 | backbone | feature bank (LMDB) | dimension |
 |----------|:---------------------:|:------------:|
-|ResNet50|[Google Drive](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|1280|
-|ResNet101|[Google Drive](https://drive.google.com/file/d/1ND4sSGwAv2SFR42J90Vj9cNn1glz1Ex3/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|2304|
+|ResNet50|[Google Drive](https://drive.google.com/file/d/1IqFuq7GMSBFnHopjbNcDJAIES1EtxpQR/view?usp=sharing)|1280|
+|ResNet101|[Google Drive](https://drive.google.com/file/d/1ND4sSGwAv2SFR42J90Vj9cNn1glz1Ex3/view?usp=sharing)|2304|
 
 ### Checkpoint file
 
 | backbone | checkpoint | model type |
 |----------|:---------------------:|:-----------:|
 |ResNet50|[Google Drive](https://drive.google.com/file/d/1yimMvcOXaASOFOmp64HKO13LzS5b_YCj/view?usp=sharing)/[Baidu Disk](https://pan.baidu.com/s/1deRNnxgSwlAuOWHAMrzntQ) (Code: fi0s)|pytorch|
-|ResNet101|[Google Drive](https://drive.google.com/file/d/1BZ4MzlhUOzuvBPyaS8DAHcyGikh6TAJh/view?usp=sharing)/[Baidu Disk](comming soon) (Code: y1wl)|pytorch|
+|ResNet101|[Google Drive](https://drive.google.com/file/d/1BZ4MzlhUOzuvBPyaS8DAHcyGikh6TAJh/view?usp=sharing)/[Baidu Disk](https://pan.baidu.com/s/11LesMQk6dU7XNYw_ftsADQ) (Code: g63o)|pytorch|
 
 ## Acknowledgement
 
