@@ -1,16 +1,11 @@
+import math
 import torch
 import torch.nn as nn
-import torch.nn.init as init
-import torch.nn.functional as F
-import math
-import numpy as np
-
 import slowfast.utils.logging as logging
 
-from collections import defaultdict
-from functools import reduce
 
 logger = logging.get_logger(__name__)
+
 
 class Pair(nn.Module):
 
@@ -42,8 +37,6 @@ class Pair(nn.Module):
         )
 
     def make_context_pair(self, rois_pair1, key_pair1, val_pair1, rois_pair2, key_pair2, val_pair2):
-
-        ncontext = key_pair1.shape[0]
 
         p1 = torch.matmul(rois_pair1, key_pair1.permute(1, 0)) / math.sqrt(self.latent)
         p1 = torch.softmax(p1, dim=-1)
@@ -169,6 +162,7 @@ class ReaderUnit(nn.Module):
 
         return output
 
+
 class ContextModule(nn.Module):
 
     def __init__(
@@ -220,6 +214,7 @@ class ContextModule(nn.Module):
         attn = torch.cat(attn, dim=0)
 
         return ctx, attn
+
 
 class FFN(nn.Module):
 
@@ -331,6 +326,7 @@ class BasicTransformer(nn.Module):
 
         return out2, heat
 
+
 class MultiHeadTransformer(nn.Module):
 
     def __init__(
@@ -343,7 +339,7 @@ class MultiHeadTransformer(nn.Module):
     ):
         super(MultiHeadTransformer, self).__init__()
         self.transformers = nn.ModuleList()
-        for i in range(num_head):
+        for _ in range(num_head):
             self.transformers.append(
                 BasicTransformer(
                     dim_query_in,
@@ -356,6 +352,7 @@ class MultiHeadTransformer(nn.Module):
     def forward(self, query, keyval):
         return torch.cat([m(query, keyval) for m in self.transformers], dim=1)
 
+
 class MultiLayerTransformer(nn.Module):
 
     def __init__(
@@ -367,7 +364,7 @@ class MultiLayerTransformer(nn.Module):
     ):
         super(MultiLayerTransformer, self).__init__()
         self.transformers = nn.ModuleList()
-        for i in range(num_layers):
+        for _ in range(num_layers):
             self.transformers.append(
                transforemer_type(
                    *arg, **kwargs
@@ -380,4 +377,3 @@ class MultiLayerTransformer(nn.Module):
             query = m(query, keyval)
 
         return query
-

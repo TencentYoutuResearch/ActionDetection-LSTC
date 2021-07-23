@@ -5,8 +5,6 @@ import logging
 import numpy as np
 import torch
 import lmdb
-import os
-import slowfast.utils.distributed as du
 
 from . import ava_helper as ava_helper
 from . import cv2_transform as cv2_transform
@@ -15,6 +13,7 @@ from . import utils as utils
 from .build import DATASET_REGISTRY
 
 logger = logging.getLogger(__name__)
+
 
 @DATASET_REGISTRY.register()
 class Ava(torch.utils.data.Dataset):

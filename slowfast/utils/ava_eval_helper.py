@@ -138,6 +138,7 @@ def evaluate_ava_from_files(labelmap, groundtruth, detections, exclusions):
     detections = read_csv(detections, class_whitelist, load_score=True)
     run_evaluation(categories, groundtruth, detections, excluded_keys)
 
+
 def evaluate_hieve(
     preds,
     original_boxes,
@@ -167,6 +168,7 @@ def evaluate_hieve(
 
     logger.info("HIEVE eval done in %f seconds." % (time.time() - eval_start))
     return
+
 
 def evaluate_ava(
     preds,
@@ -290,6 +292,7 @@ def run_evaluation(
 
     pprint.pprint(metrics, indent=2)
     return metrics
+
 
 def get_ava_eval_data(
     scores,

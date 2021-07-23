@@ -212,6 +212,7 @@ def spatial_shift_crop_list(size, images, spatial_shift_pos, boxes=None):
             boxes[i][:, [1, 3]] -= y_offset
     return cropped, boxes
 
+
 def drop_boxes(boxes, min_scale=8):
 
     """
@@ -231,6 +232,7 @@ def drop_boxes(boxes, min_scale=8):
         boxes[i] = box[valid]
 
     return  boxes
+
 
 def CHW2HWC(image):
     """

@@ -5,7 +5,6 @@ import logging
 import os
 import torch
 import pickle
-import lmdb
 
 from collections import defaultdict
 from fvcore.common.file_io import PathManager
@@ -68,6 +67,7 @@ def load_image_lists(cfg, is_train):
 
     return image_paths, video_idx_to_name
 
+
 def load_feature_bank(cfg, mode):
 
     bank_path = cfg.AVA.FEATURE_BANK_PATH
@@ -76,11 +76,12 @@ def load_feature_bank(cfg, mode):
 
     bank = torch.load(bank_path)[mode]
     num = 0
-    for vid, saved in bank.items():
+    for _, saved in bank.items():
         for sec in saved:
-           num += len(saved[sec]['feature'])
+            num += len(saved[sec]['feature'])
 
     return bank, num
+
 
 def draw_feature_from_sliding_window(cfg, vid, sec, split, db=None):
 
@@ -132,6 +133,7 @@ def draw_feature_from_sliding_window(cfg, vid, sec, split, db=None):
     # if output_feat is not None:
     #     print(start, end, output_feat.shape[0], output_context.shape[0])
     return output_feat, time_stamp
+
 
 def load_boxes_and_labels(cfg, mode):
     """

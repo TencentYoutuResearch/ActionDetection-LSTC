@@ -5,15 +5,13 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-import slowfast.utils.weight_init_helper as init_helper
 from slowfast.utils.logging import get_logger
-
-from . import head_helper, resnet_helper, stem_helper
 from .build import MODEL_REGISTRY
 
+
 logger = get_logger(__name__)
+
 
 @MODEL_REGISTRY.register()
 class BankContext(nn.Module):

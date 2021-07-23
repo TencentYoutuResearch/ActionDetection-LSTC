@@ -29,7 +29,7 @@ def make_checkpoint_dir(path_to_job):
     if du.is_master_proc() and not PathManager.exists(checkpoint_dir):
         try:
             PathManager.mkdirs(checkpoint_dir)
-        except Exception:
+        except FileExistsError:
             pass
     return checkpoint_dir
 
@@ -64,7 +64,7 @@ def get_last_checkpoint(path_to_job):
     d = get_checkpoint_dir(path_to_job)
     names = PathManager.ls(d) if PathManager.exists(d) else []
     names = [f for f in names if "checkpoint" in f]
-    assert len(names), "No checkpoints found in '{}'.".format(d)
+    assert len(names) > 0, "No checkpoints found in '{}'.".format(d)
     # Sort the checkpoints by epoch.
     name = sorted(names)[-1]
     return os.path.join(d, name)
@@ -439,6 +439,7 @@ def load_test_checkpoint(cfg, model):
         logger.info(
             "Unknown way of loading checkpoint. Using with random initialization, only for debugging."
         )
+
 
 def load_train_checkpoint(cfg, model, optimizer):
     """

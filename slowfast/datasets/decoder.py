@@ -329,7 +329,7 @@ def decode(
             raise NotImplementedError(
                 "Unknown decoding backend {}".format(backend)
             )
-    except Exception as e:
+    except NotImplementedError as e:
         print("Failed to decode by {} with exception: {}".format(backend, e))
         return None
 
