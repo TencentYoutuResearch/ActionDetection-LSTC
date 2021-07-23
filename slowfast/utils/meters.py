@@ -43,10 +43,10 @@ def get_ava_mini_groundtruth(full_groundtruth):
                 ret[i][key] = full_groundtruth[i][key]
     return ret
 
+class BaseMeter(object):
 
-class AVAMeter(object):
     """
-    Measure the AVA train, val, and test stats.
+    Base meter type
     """
 
     def __init__(self, overall_iters, cfg, mode):
@@ -57,33 +57,15 @@ class AVAMeter(object):
         """
         self.cfg = cfg
         self.name = f"{cfg.DATA.TEST_CROP_SIZE}"
-        if cfg.AVA.TEST_FORCE_FLIP:
-            self.name += f"_flip"
 
         self.lr = None
         self.loss = ScalarMeter(cfg.LOG_PERIOD)
-        self.full_ava_test = cfg.AVA.FULL_TEST_ON_VAL
         self.mode = mode
         self.iter_timer = Timer()
         self.all_preds = []
         self.all_ori_boxes = []
         self.all_metadata = []
         self.overall_iters = overall_iters
-        self.excluded_keys = read_exclusions(
-            os.path.join(cfg.AVA.ANNOTATION_DIR, cfg.AVA.EXCLUSION_FILE)
-        )
-        self.categories, self.class_whitelist = read_labelmap(
-            os.path.join(cfg.AVA.ANNOTATION_DIR, cfg.AVA.LABEL_MAP_FILE)
-        )
-        gt_filename = os.path.join(
-            cfg.AVA.ANNOTATION_DIR, cfg.AVA.GROUNDTRUTH_FILE
-        )
-        self.full_groundtruth = read_csv(gt_filename, self.class_whitelist)
-        self.mini_groundtruth = get_ava_mini_groundtruth(self.full_groundtruth)
-
-        _, self.video_idx_to_name = ava_helper.load_image_lists(
-            cfg, mode == "train"
-        )
 
     def log_iter_stats(self, cur_epoch, cur_iter):
         """
@@ -171,6 +153,59 @@ class AVAMeter(object):
             self.loss.add_value(loss)
         if lr is not None:
             self.lr = lr
+
+    def finalize_metrics(self, log):
+        pass
+
+    def log_epoch_stats(self, cur_epoch):
+        """
+        Log the stats of the current epoch.
+        Args:
+            cur_epoch (int): the number of current epoch.
+        """
+        if self.mode in ["val", "test"]:
+            self.finalize_metrics(log=False)
+            stats = {
+                "_type": "{}_epoch".format(self.mode),
+                "cur_epoch": "{}".format(cur_epoch + 1),
+                "mode": self.mode,
+                "map": self.full_map,
+                "gpu_mem": "{:.2f} GB".format(misc.gpu_mem_usage()),
+                "RAM": "{:.2f}/{:.2f} GB".format(*misc.cpu_mem_usage()),
+            }
+            logging.log_json_stats(stats)
+
+class AVAMeter(BaseMeter):
+    """
+    Measure the AVA train, val, and test stats.
+    """
+
+    def __init__(self, overall_iters, cfg, mode):
+        """
+            overall_iters (int): the overall number of iterations of one epoch.
+            cfg (CfgNode): configs.
+            mode (str): `train`, `val`, or `test` mode.
+        """
+        super(AVAMeter, self).__init__(overall_iters, cfg, mode)
+        if cfg.AVA.TEST_FORCE_FLIP:
+            self.name += f"_flip"
+
+        self.full_ava_test = cfg.AVA.FULL_TEST_ON_VAL
+        self.excluded_keys = read_exclusions(
+            os.path.join(cfg.AVA.ANNOTATION_DIR, cfg.AVA.EXCLUSION_FILE)
+        )
+        self.categories, self.class_whitelist = read_labelmap(
+            os.path.join(cfg.AVA.ANNOTATION_DIR, cfg.AVA.LABEL_MAP_FILE)
+        )
+        gt_filename = os.path.join(
+            cfg.AVA.ANNOTATION_DIR, cfg.AVA.GROUNDTRUTH_FILE
+        )
+        self.full_groundtruth = read_csv(gt_filename, self.class_whitelist)
+        self.mini_groundtruth = get_ava_mini_groundtruth(self.full_groundtruth)
+
+        _, self.video_idx_to_name = ava_helper.load_image_lists(
+            cfg, mode == "train"
+        )
 
     def finalize_metrics(self, log=True):
         """
@@ -200,25 +235,8 @@ class AVAMeter(object):
             stats = {"mode": self.mode, "map": self.full_map}
             logging.log_json_stats(stats)
 
-    def log_epoch_stats(self, cur_epoch):
-        """
-        Log the stats of the current epoch.
-        Args:
-            cur_epoch (int): the number of current epoch.
-        """
-        if self.mode in ["val", "test"]:
-            self.finalize_metrics(log=False)
-            stats = {
-                "_type": "{}_epoch".format(self.mode),
-                "cur_epoch": "{}".format(cur_epoch + 1),
-                "mode": self.mode,
-                "map": self.full_map,
-                "gpu_mem": "{:.2f} GB".format(misc.gpu_mem_usage()),
-                "RAM": "{:.2f}/{:.2f} GB".format(*misc.cpu_mem_usage()),
-            }
-            logging.log_json_stats(stats)
+class HieveMeter(AVAMeter):
 
-class HieveMeter(object):
     """
     Measure the HIEVE train, val, and test stats.
     """
@@ -229,112 +247,16 @@ class HieveMeter(object):
             cfg (CfgNode): configs.
             mode (str): `train`, `val`, or `test` mode.
         """
-        self.cfg = cfg
-        self.lr = None
-        self.loss = ScalarMeter(cfg.LOG_PERIOD)
-        self.full_ava_test = cfg.AVA.FULL_TEST_ON_VAL
-        self.mode = mode
-        self.iter_timer = Timer()
-        self.all_preds = []
-        self.all_ori_boxes = []
-        self.all_metadata = []
-        self.overall_iters = overall_iters
+        super(HieveMeter, self).__init__(overall_iters, cfg, mode)
         self.class_whitelist = range(1, 15)
 
         _, self.video_idx_to_name = ava_helper.load_image_lists(
             cfg, mode == "train"
         )
 
-    def log_iter_stats(self, cur_epoch, cur_iter):
-        """
-        Log the stats.
-        Args:
-            cur_epoch (int): the current epoch.
-            cur_iter (int): the current iteration.
-        """
-
-        if (cur_iter + 1) % self.cfg.LOG_PERIOD != 0:
-            return
-
-        eta_sec = self.iter_timer.seconds() * (self.overall_iters - cur_iter)
-        eta = str(datetime.timedelta(seconds=int(eta_sec)))
-        if self.mode == "train":
-            stats = {
-                "_type": "{}_iter".format(self.mode),
-                "cur_epoch": "{}".format(cur_epoch + 1),
-                "cur_iter": "{}".format(cur_iter + 1),
-                "eta": eta,
-                "time_diff": self.iter_timer.seconds(),
-                "mode": self.mode,
-                "loss": self.loss.get_win_median(),
-                "lr": self.lr,
-            }
-        elif self.mode == "val":
-            stats = {
-                "_type": "{}_iter".format(self.mode),
-                "cur_epoch": "{}".format(cur_epoch + 1),
-                "cur_iter": "{}".format(cur_iter + 1),
-                "eta": eta,
-                "time_diff": self.iter_timer.seconds(),
-                "mode": self.mode,
-            }
-        elif self.mode == "test":
-            stats = {
-                "_type": "{}_iter".format(self.mode),
-                "cur_iter": "{}".format(cur_iter + 1),
-                "eta": eta,
-                "time_diff": self.iter_timer.seconds(),
-                "mode": self.mode,
-            }
-        else:
-            raise NotImplementedError("Unknown mode: {}".format(self.mode))
-
-        logging.log_json_stats(stats)
-
-    def iter_tic(self):
-        """
-        Start to record time.
-        """
-        self.iter_timer.reset()
-
-    def iter_toc(self):
-        """
-        Stop to record time.
-        """
-        self.iter_timer.pause()
-
-    def reset(self):
-        """
-        Reset the Meter.
-        """
-        self.loss.reset()
-
-        self.all_preds = []
-        self.all_ori_boxes = []
-        self.all_metadata = []
-
-    def update_stats(self, preds, ori_boxes, metadata, loss=None, lr=None):
-        """
-        Update the current stats.
-        Args:
-            preds (tensor): prediction embedding.
-            ori_boxes (tensor): original boxes (x1, y1, x2, y2).
-            metadata (tensor): metadata of the AVA data.
-            loss (float): loss value.
-            lr (float): learning rate.
-        """
-        if self.mode in ["val", "test"]:
-            self.all_preds.append(preds)
-            self.all_ori_boxes.append(ori_boxes)
-            self.all_metadata.append(metadata)
-        if loss is not None:
-            self.loss.add_value(loss)
-        if lr is not None:
-            self.lr = lr
-
     def finalize_metrics(self, log=True):
         """
-        Calculate and log the final AVA metrics.
+        Calculate and log the final metrics.
         """
         all_preds = torch.cat(self.all_preds, dim=0)
         all_ori_boxes = torch.cat(self.all_ori_boxes, dim=0)
@@ -348,24 +270,6 @@ class HieveMeter(object):
             video_idx_to_name=self.video_idx_to_name,
             output_dir=self.cfg.OUTPUT_DIR
         )
-
-    def log_epoch_stats(self, cur_epoch):
-        """
-        Log the stats of the current epoch.
-        Args:
-            cur_epoch (int): the number of current epoch.
-        """
-        if self.mode in ["val", "test"]:
-            self.finalize_metrics(log=False)
-            stats = {
-                "_type": "{}_epoch".format(self.mode),
-                "cur_epoch": "{}".format(cur_epoch + 1),
-                "mode": self.mode,
-                "map": self.full_map,
-                "gpu_mem": "{:.2f} GB".format(misc.gpu_mem_usage()),
-                "RAM": "{:.2f}/{:.2f} GB".format(*misc.cpu_mem_usage()),
-            }
-            logging.log_json_stats(stats)
 
 class TestMeter(object):
     """

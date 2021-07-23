@@ -149,13 +149,14 @@ def evaluate_hieve(
 ):
     eval_start = time.time()
 
-    detections = get_hieve_eval_data(
+    detections = get_ava_eval_data(
         preds,
         original_boxes,
         metadata,
         class_whitelist,
         video_idx_to_name=video_idx_to_name,
-        sec_format="%d"
+        sec_format="%d",
+        dataset="hieve"
     )
 
     logger.info(
@@ -290,47 +291,6 @@ def run_evaluation(
     pprint.pprint(metrics, indent=2)
     return metrics
 
-def get_hieve_eval_data(
-    scores,
-    boxes,
-    metadata,
-    class_whitelist,
-    verbose=False,
-    video_idx_to_name=None,
-    sec_format = "%04d"
-):
-    """
-    Convert our data format into the data format used in official AVA
-    evaluation.
-    """
-
-    out_scores = defaultdict(list)
-    out_labels = defaultdict(list)
-    out_boxes = defaultdict(list)
-    count = 0
-    for i in range(scores.shape[0]):
-        video_idx = int(np.round(metadata[i][0]))
-        sec = int(np.round(metadata[i][1]))
-
-        video = video_idx_to_name[video_idx]
-
-        key = video + "," + sec_format % (sec)
-        batch_box = boxes[i].tolist()
-        # The first is batch idx.
-        batch_box = [batch_box[j] for j in [0, 2, 1, 4, 3]]
-
-        one_scores = scores[i]
-        score, cls_idx = torch.max(one_scores, dim=-1)
-        cls_idx = cls_idx.item()
-        score = score.item()
-
-        out_scores[key].append(score)
-        out_labels[key].append(cls_idx + 1)
-        out_boxes[key].append(batch_box[1:])
-        count += 1
-
-    return out_boxes, out_labels, out_scores
-
 def get_ava_eval_data(
     scores,
     boxes,
@@ -338,7 +298,8 @@ def get_ava_eval_data(
     class_whitelist,
     verbose=False,
     video_idx_to_name=None,
-    sec_format = "%04d"
+    sec_format = "%04d",
+    dataset="ava"
 ):
     """
     Convert our data format into the data format used in official AVA
@@ -360,13 +321,24 @@ def get_ava_eval_data(
         # The first is batch idx.
         batch_box = [batch_box[j] for j in [0, 2, 1, 4, 3]]
 
-        one_scores = scores[i].tolist()
-        for cls_idx, score in enumerate(one_scores):
-            if cls_idx + 1 in class_whitelist:
-                out_scores[key].append(score)
-                out_labels[key].append(cls_idx + 1)
-                out_boxes[key].append(batch_box[1:])
-                count += 1
+        if dataset == "ava":
+            one_scores = scores[i].tolist()
+            for cls_idx, score in enumerate(one_scores):
+                if cls_idx + 1 in class_whitelist:
+                    out_scores[key].append(score)
+                    out_labels[key].append(cls_idx + 1)
+                    out_boxes[key].append(batch_box[1:])
+                    count += 1
+        else:
+            one_scores = scores[i]
+            score, cls_idx = torch.max(one_scores, dim=-1)
+            cls_idx = cls_idx.item()
+            score = score.item()
+
+            out_scores[key].append(score)
+            out_labels[key].append(cls_idx + 1)
+            out_boxes[key].append(batch_box[1:])
+            count += 1
 
     return out_boxes, out_labels, out_scores
 
