@@ -21,106 +21,29 @@ from slowfast.utils.meters import AVAMeter, TestMeter, HieveMeter
 
 logger = logging.get_logger(__name__)
 
-def visualize_tensor(slow, imgs, boxes, metadata, attns, cfg, dir='vis'):
 
-    nbox = metadata.shape[0]
-    batchsize, _, _, height, width = slow.shape
+def prepare_data(inputs, labels, video_idx, meta, FBs, BTs):
+    # Transfer the data to the current GPU device.
+    if isinstance(inputs, (list,)):
+        for i in range(len(inputs)):
+            inputs[i] = inputs[i].cuda(non_blocking=True)
+    else:
+        inputs = inputs.cuda(non_blocking=True)
 
-    for b in range(batchsize):
-        clip_idx = boxes[:, 0] == b
-        if clip_idx.shape[0] == 0:
-            continue
+    # Transfer the data to the current GPU device.
+    labels = labels.cuda()
+    video_idx = video_idx.cuda()
+    for key, val in meta.items():
+        if isinstance(val, (list,)):
+            for i in range(len(val)):
+                val[i] = val[i].cuda(non_blocking=True)
+        else:
+            meta[key] = val.cuda(non_blocking=True)
 
-        meta = metadata[clip_idx]
-        box = boxes[clip_idx, 1:]
-        data = (slow[b] * cfg.DATA.STD[0] + cfg.DATA.MEAN[0]) * 255
-        data = data.numpy().astype(np.uint8).transpose([1, 2, 3, 0])[:, :, :, ::-1]
-        attn = attns[clip_idx]
-        img = (imgs[b] * cfg.DATA.STD[0] + cfg.DATA.MEAN[0]) * 255
-        img = img.numpy().astype(np.uint8).transpose([1, 2, 0])[:, :, ::-1]
+    for i in range(len(FBs)):
+        FBs[i] = FBs[i].cuda(non_blocking=True) if FBs[i] is not None else None
 
-        time = attn.shape[1]
-        heats = F.interpolate(attn, size=(height, width), mode='bilinear', align_corners=True)
-        heats *= 100
-        heats[heats>=255] = 255.0
-        heats = heats.numpy().astype(np.uint8)
-        print(heats.shape, heats.min(), heats.max(), heats.mean(), heats.var())
-
-        if heats.max() < 225:
-            continue
-
-        for i in range(clip_idx.shape[0]):
-            pimg = img.copy()
-            vid, sec = int(meta[i, 0].item()), int(meta[i, 1].item())
-            vis_path = os.path.join(dir, str(vid), str(sec))
-            if not os.path.exists(vis_path):
-                os.makedirs(vis_path, exist_ok=True)
-
-            pt1 = (int(box[i, 0].item() * width), int(box[i, 1].item() * height))
-            pt2 = (int(box[i, 2].item() * width), int(box[i, 3].item() * height))
-            cv2.rectangle(pimg, pt1, pt2, color=(0, 0, 255), thickness=2)
-            cv2.imwrite(os.path.join(vis_path, 'img_{}.jpg'.format(i+1)), pimg)
-
-            for t in range(time):
-                heat = cv2.applyColorMap(heats[i, t], colormap=cv2.COLORMAP_JET)
-                color = cv2.addWeighted(data[2 * t], 0.5, heat, 0.5, 0.0)
-                cv2.imwrite(os.path.join(vis_path, 'attn_{}_{}.jpg'.format(i+1, t+1)), color)
-
-def visualize_results(imgs, boxes, metadata, short_pred, long_pred, cfg, label_map, dir='results'):
-    nbox = metadata.shape[0]
-    batchsize, _, height, width = imgs.shape
-
-    for b in range(batchsize):
-        clip_idx = boxes[:, 0] == b
-        if clip_idx.shape[0] == 0:
-            continue
-
-        meta = metadata[clip_idx]
-        box = boxes[clip_idx, 1:]
-        img = (imgs[b] * cfg.DATA.STD[0] + cfg.DATA.MEAN[0]) * 255
-        img = img.numpy().astype(np.uint8).transpose([1, 2, 0])[:, :, ::-1]
-
-        sp = short_pred[clip_idx]
-        lp = long_pred[clip_idx]
-
-        for i in range(clip_idx.shape[0]):
-            pimg = img.copy()
-            canvas = np.zeros(pimg.shape, dtype=np.uint8)
-            vid, sec = int(meta[i, 0].item()), int(meta[i, 1].item())
-            vis_path = os.path.join(dir, str(vid), str(sec))
-            if not os.path.exists(vis_path):
-                os.makedirs(vis_path, exist_ok=True)
-
-            sc, si = torch.max(sp[i], dim=0)
-            sc = float(sc.item())
-            si = int(si.item())
-
-            lc, li = torch.max(lp[i], dim=0)
-            lc = float(lc.item())
-            li = int(li.item())
-
-            if si == li:
-                continue
-
-            ns, nl = label_map[si+1], label_map[li+1]
-            print(ns, nl)
-            pt1 = (int(box[i, 0].item()), int(box[i, 1].item()))
-            pt2 = (int(box[i, 2].item() ), int(box[i, 3].item()))
-            print(pt1, pt2, pimg.shape)
-            cv2.rectangle(canvas, (pt1[0], pt1[1]+1), (pt2[0], pt1[1]+21), color=(0, 128, 0), thickness=-1)
-            cv2.rectangle(canvas, (pt1[0], pt1[1]+25), (pt2[0], pt1[1]+45), color=(160, 128, 0), thickness=-1)
-            cv2.rectangle(pimg, pt1, pt2, color=(0, 0, 255), thickness=2)
-            cv2.putText(
-                pimg, '{}'.format(ns), (pt1[0], pt1[1]+14), cv2.FONT_HERSHEY_COMPLEX, 0.5,
-                color=(255, 255, 255), thickness=1
-            )
-            cv2.putText(
-                pimg, '{}'.format(nl), (pt1[0], pt1[1]+38), cv2.FONT_HERSHEY_COMPLEX, 0.5,
-                color=(255, 255, 255), thickness=1
-            )
-            pimg = cv2.addWeighted(canvas, 0.45, pimg, 1.0, 0.0)
-
-            cv2.imwrite(os.path.join(vis_path, 'img_{}.jpg'.format(i + 1)), pimg)
+    return inputs, labels, video_idx, meta, FBs, BTs
 
 
 @torch.no_grad()
@@ -151,25 +74,9 @@ def perform_test(test_loader, model, test_meter, cfg, writer=None):
     logger.info('online test for {} iters'.format(len(test_loader)))
     for cur_iter, (inputs, labels, video_idx, meta, FBs, BTs) in enumerate(test_loader):
         if cfg.NUM_GPUS:
-            # Transfer the data to the current GPU device.
-            if isinstance(inputs, (list,)):
-                for i in range(len(inputs)):
-                    inputs[i] = inputs[i].cuda(non_blocking=True)
-            else:
-                inputs = inputs.cuda(non_blocking=True)
 
-            # Transfer the data to the current GPU device.
-            labels = labels.cuda()
-            video_idx = video_idx.cuda()
-            for key, val in meta.items():
-                if isinstance(val, (list,)):
-                    for i in range(len(val)):
-                        val[i] = val[i].cuda(non_blocking=True)
-                else:
-                    meta[key] = val.cuda(non_blocking=True)
-
-            for i in range(len(FBs)):
-                FBs[i] = FBs[i].cuda(non_blocking=True) if FBs[i] is not None else None
+            inputs, labels, video_idx, meta, FBs, BTs = \
+                prepare_data(inputs, labels, video_idx, meta, FBs, BTs)
 
         if cfg.DETECTION.ENABLE:
             # Compute the predictions.

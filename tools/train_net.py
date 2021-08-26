@@ -25,6 +25,31 @@ logger = logging.get_logger(__name__)
 
 train_iter = 0
 
+
+def prepare_data(inputs, labels, video_idx, meta, FBs, BTs):
+    # Transfer the data to the current GPU device.
+    if isinstance(inputs, (list,)):
+        for i in range(len(inputs)):
+            inputs[i] = inputs[i].cuda(non_blocking=True)
+    else:
+        inputs = inputs.cuda(non_blocking=True)
+
+    # Transfer the data to the current GPU device.
+    labels = labels.cuda()
+    video_idx = video_idx.cuda()
+    for key, val in meta.items():
+        if isinstance(val, (list,)):
+            for i in range(len(val)):
+                val[i] = val[i].cuda(non_blocking=True)
+        else:
+            meta[key] = val.cuda(non_blocking=True)
+
+    for i in range(len(FBs)):
+        FBs[i] = FBs[i].cuda(non_blocking=True) if FBs[i] is not None else None
+
+    return inputs, labels, video_idx, meta, FBs, BTs
+
+
 def train_epoch(
     train_loader, model, optimizer, train_meter, cur_epoch, cfg, writer=None
 ):
@@ -53,25 +78,12 @@ def train_epoch(
     data_size = len(train_loader)
     logger.info('training for {} iterations'.format(data_size))
 
-    for cur_iter, (inputs, labels, _, meta, FBs, BTs) in enumerate(train_loader):
+    for cur_iter, (inputs, labels, video_idx, meta, FBs, BTs) in enumerate(train_loader):
         # Transfer the data to the current GPU device.
 
         if cfg.NUM_GPUS:
-            if isinstance(inputs, (list,)):
-                for i in range(len(inputs)):
-                    inputs[i] = inputs[i].cuda(non_blocking=True)
-            else:
-                inputs = inputs.cuda(non_blocking=True)
-            labels = labels.cuda()
-            for key, val in meta.items():
-                if isinstance(val, (list,)):
-                    for i in range(len(val)):
-                        val[i] = val[i].cuda(non_blocking=True)
-                else:
-                    meta[key] = val.cuda(non_blocking=True)
-
-            for i in range(len(FBs)):
-                FBs[i] = FBs[i].cuda(non_blocking=True) if FBs[i] is not None else None
+            inputs, labels, video_idx, meta, FBs, BTs = \
+                prepare_data(inputs, labels, video_idx, meta, FBs, BTs)
 
         # Update the learning rate.
         lr = optim.get_epoch_lr(cur_epoch + float(cur_iter) / data_size, cfg)
@@ -179,6 +191,7 @@ def train_epoch(
         train_meter.log_epoch_stats(cur_epoch)
     train_meter.reset()
 
+
 @torch.no_grad()
 def eval_epoch(val_loader, model, val_meter, cur_epoch, cfg, writer=None):
     """
@@ -198,24 +211,10 @@ def eval_epoch(val_loader, model, val_meter, cur_epoch, cfg, writer=None):
     model.eval()
     val_meter.iter_tic()
 
-    for cur_iter, (inputs, labels, _, meta, FBs, BTs) in enumerate(val_loader):
+    for cur_iter, (inputs, labels, video_idx, meta, FBs, BTs) in enumerate(val_loader):
         if cfg.NUM_GPUS:
-            # Transferthe data to the current GPU device.
-            if isinstance(inputs, (list,)):
-                for i in range(len(inputs)):
-                    inputs[i] = inputs[i].cuda(non_blocking=True)
-            else:
-                inputs = inputs.cuda(non_blocking=True)
-            labels = labels.cuda()
-            for key, val in meta.items():
-                if isinstance(val, (list,)):
-                    for i in range(len(val)):
-                        val[i] = val[i].cuda(non_blocking=True)
-                else:
-                    meta[key] = val.cuda(non_blocking=True)
-
-            for i in range(len(FBs)):
-                FBs[i] = FBs[i].cuda(non_blocking=True) if FBs[i] is not None else None
+            inputs, labels, video_idx, meta, FBs, BTs = \
+                prepare_data(inputs, labels, video_idx, meta, FBs, BTs)
 
         if cfg.DETECTION.ENABLE:
             # Compute the predictions.
