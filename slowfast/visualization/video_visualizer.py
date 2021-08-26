@@ -47,8 +47,7 @@ def _create_text_labels(classes, scores, class_names, ground_truth=False):
 class ImgVisualizer(Visualizer):
     def __init__(self, img_rgb, meta, **kwargs):
         """
-        See https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/visualizer.py
-        for more details.
+
         Args:
             img_rgb: a tensor or numpy array of shape (H, W, C), where H and W correspond to
                 the height and width of the image respectively. C is the number of
@@ -386,7 +385,8 @@ class VideoVisualizer:
                     color channels. The image is required to be in RGB format since that
                     is a requirement of the Matplotlib library. The image is also expected
                     to be in the range [0, 255].
-                preds (tensor or list): If ground_truth is False, provide a float tensor of shape (num_boxes, num_classes)
+                preds (tensor or list): If ground_truth is False, provide a float
+                    tensor of shape (num_boxes, num_classes)
                     that contains all of the confidence scores of the model.
                     For recognition task, input shape can be (num_classes,). To plot true label (ground_truth is True),
                     preds is a list contains int32 of the shape (num_boxes, true_class_ids) or (true_class_ids,).
@@ -493,7 +493,8 @@ class VideoVisualizer:
                 text_alpha (float): transparency label of the box wrapped around text labels.
                 ground_truth (bool): whether the prodived bounding boxes are ground-truth.
                 keyframe_idx (int): the index of keyframe in the clip.
-                draw_range (Optional[list[ints]): only draw frames in range [start_idx, end_idx] inclusively in the clip.
+                draw_range (Optional[list[ints]): only draw frames
+                    in range [start_idx, end_idx] inclusively in the clip.
                     If None, draw on the entire clip.
                 repeat_frame (int): repeat each frame in draw_range for `repeat_frame` time for slow-motion effect.
         """

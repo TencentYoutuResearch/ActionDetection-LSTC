@@ -110,8 +110,14 @@ def visualize_results(imgs, boxes, metadata, short_pred, long_pred, cfg, label_m
             cv2.rectangle(canvas, (pt1[0], pt1[1]+1), (pt2[0], pt1[1]+21), color=(0, 128, 0), thickness=-1)
             cv2.rectangle(canvas, (pt1[0], pt1[1]+25), (pt2[0], pt1[1]+45), color=(160, 128, 0), thickness=-1)
             cv2.rectangle(pimg, pt1, pt2, color=(0, 0, 255), thickness=2)
-            cv2.putText(pimg, '{}'.format(ns), (pt1[0], pt1[1]+14), cv2.FONT_HERSHEY_COMPLEX, 0.5, color=(255, 255, 255), thickness=1)
-            cv2.putText(pimg, '{}'.format(nl), (pt1[0], pt1[1]+38), cv2.FONT_HERSHEY_COMPLEX, 0.5, color=(255, 255, 255), thickness=1)
+            cv2.putText(
+                pimg, '{}'.format(ns), (pt1[0], pt1[1]+14), cv2.FONT_HERSHEY_COMPLEX, 0.5,
+                color=(255, 255, 255), thickness=1
+            )
+            cv2.putText(
+                pimg, '{}'.format(nl), (pt1[0], pt1[1]+38), cv2.FONT_HERSHEY_COMPLEX, 0.5,
+                color=(255, 255, 255), thickness=1
+            )
             pimg = cv2.addWeighted(canvas, 0.45, pimg, 1.0, 0.0)
 
             cv2.imwrite(os.path.join(vis_path, 'img_{}.jpg'.format(i + 1)), pimg)

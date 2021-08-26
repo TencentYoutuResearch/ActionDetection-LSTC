@@ -61,7 +61,7 @@ The codebase provide following resources for fast training and validation
 
 ## Acknowledgement
 
-This codebase is built upon [PySlowFast](https://github.com/facebookresearch/SlowFast), please follow the official instruction to install the repository.
+This codebase is built upon [PySlowFast](https://github.com/facebookresearch/SlowFast).
 
 ## Citation
 
