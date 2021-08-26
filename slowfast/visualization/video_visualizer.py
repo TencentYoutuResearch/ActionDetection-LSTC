@@ -55,7 +55,6 @@ class ImgVisualizer(Visualizer):
                 is a requirement of the Matplotlib library. The image is also expected
                 to be in the range [0, 255].
             meta (MetadataCatalog): image metadata.
-                See https://github.com/facebookresearch/detectron2/blob/81d5a87763bfc71a492b5be89b74179bd7492f6b/detectron2/data/catalog.py#L90
         """
         super(ImgVisualizer, self).__init__(img_rgb, meta, **kwargs)
 
