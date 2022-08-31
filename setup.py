@@ -24,6 +24,7 @@ setup(
         "pandas",
         "torchvision>=0.4.2",
         "sklearn",
+        "lmdb",
         "tensorboard",
     ],
     extras_require={"tensorboard_video_visualization": ["moviepy"]},
